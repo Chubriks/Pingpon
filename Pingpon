@@ -1,0 +1,95 @@
+from pygame import *
+from random import randint
+
+font.init()
+font1 = font.SysFont('Arial', 20)
+lose = font1.render('Игра окончена, победил правый игрок!', True, (100, 0, 0))
+win = font1.render('Игра окончена, победил левый игрок!', True, (255,255,255))
+
+img_ball = 'ball.png'
+img_racket = 'racket.png'
+img_background = 'background.jpg'
+
+class GameSprite(sprite.Sprite):
+    def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed):
+        sprite.Sprite.__init__(self)
+        self.image = transform.scale(image.load(player_image), (size_x, size_y))
+        self.speed = player_speed
+        self.rect = self.image.get_rect()
+        self.rect.x = player_x
+        self.rect.y = player_y
+    def reset(self):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+class Player_one(GameSprite):
+    def update(self):
+        keys = key.get_pressed()
+        if keys[K_UP] and self.rect.y >5:
+            self.rect.y -= self.speed
+        if keys[K_DOWN] and self.rect.y < win_height-115:
+            self.rect.y += self.speed
+
+class Player_two(GameSprite):
+    def update(self):
+        keys = key.get_pressed()
+        if keys[K_w] and self.rect.y >5:
+            self.rect.y -= self.speed
+        if keys[K_s] and self.rect.y < win_height-115:
+            self.rect.y += self.speed
+finish = False
+run = True
+win_width = 720
+win_height = 480
+class Ball(GameSprite):
+    def update(self):
+        if self.rect.y <= 0 or self.rect.y >= 440:
+            self.speed *= -1
+      
+        
+        if self.rect.x <=-20:
+            finish = True
+            window.blit(lose, (200,200))
+        if self.rect.x >= 720:
+            finish = True
+            window.blit(win, (200,200))
+
+        if self.rect.right > one.rect.left and self.rect.left < one.rect.right and self.rect.bottom > one.rect.top and self.rect.top < one.rect.bottom:
+            self.speed *=-1
+
+
+        if self.rect.right > two.rect.left and self.rect.left < two.rect.right and self.rect.bottom > two.rect.top and self.rect.top < two.rect.bottom:
+            self.speed *=-1
+
+
+
+
+
+display.set_caption('ping-pong')
+window = display.set_mode((win_width, win_height))
+background = transform.scale(image.load(img_background), (win_width, win_height))
+
+one = Player_one(img_racket, 680, 200, 50, 110, 10)
+two = Player_two(img_racket, 5, 200, 50, 110, 10)
+ball = Ball(img_ball, 310, 200, 50, 50, 10)
+
+
+while run:
+    for e in event.get():
+        if e.type == QUIT:
+            run = False
+    if not finish:
+        window.blit(background,(0,0))
+
+        ball.rect.x += ball.speed   
+        ball.rect.y += ball.speed
+
+        one.update()
+        two.update()
+        ball.update()
+
+        one.reset()
+        two.reset()
+        ball.reset()
+
+        display.update()
+    time.delay(50)
